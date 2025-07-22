@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Profile Card Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --avatar-size: 25vw;
+      --max-avatar: 150px;
+    }
+
+    body {
+      font-family: sans-serif;
+      background: #f0f0f0;
+      padding: 5vh 5vw;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    input[type="text"], input[type="color"] {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .card img {
+      width: min(var(--avatar-size), var(--max-avatar));
+      height: min(var(--avatar-size), var(--max-avatar));
+      object-fit: cover;
+      border-radius: 50%;
+      margin-bottom: 1rem;
+    }
+
+    .card h2 {
+      margin: 0.5rem 0;
+    }
+
+    button {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #005dc1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div>
+      <label>Name:
+        <input type="text" id="nameInput" placeholder="John Doe" />
+      </label>
+      <label>Role:
+        <input type="text" id="roleInput" placeholder="Web Developer" />
+      </label>
+      <label>Avatar Image URL:
+        <input type="text" id="avatarInput" placeholder="https://..." />
+      </label>
+      <label>Background Color:
+        <input type="color" id="bgColorInput" value="#ffffff" />
+      </label>
+    </div>
+
+    <div class="card" id="profileCard">
+      <img id="avatar" src="https://via.placeholder.com/150" alt="Avatar" />
+      <h2 id="cardName">John Doe</h2>
+      <p id="cardRole">Web Developer</p>
+    </div>
+
+    <button onclick="downloadCard()">Download Card</button>
+  </div>
+
+  <script>
+    const nameInput = document.getElementById("nameInput");
+    const roleInput = document.getElementById("roleInput");
+    const avatarInput = document.getElementById("avatarInput");
+    const bgColorInput = document.getElementById("bgColorInput");
+
+    const card = document.getElementById("profileCard");
+    const avatar = document.getElementById("avatar");
+    const cardName = document.getElementById("cardName");
+    const cardRole = document.getElementById("cardRole");
+
+    nameInput.addEventListener("input", () => {
+      cardName.textContent = nameInput.value || "John Doe";
+    });
+
+    roleInput.addEventListener("input", () => {
+      cardRole.textContent = roleInput.value || "Web Developer";
+    });
+
+    bgColorInput.addEventListener("input", () => {
+      card.style.backgroundColor = bgColorInput.value;
+    });
+
+    avatarInput.addEventListener("input", async () => {
+      const url = avatarInput.value;
+      if (!url) return;
+      try {
+        const base64 = await toBase64(url);
+        avatar.src = base64;
+      } catch (err) {
+        alert("Image couldn't load. Check the URL or try another.");
+        avatar.src = "https://via.placeholder.com/150";
+      }
+    });
+
+    async function toBase64(url) {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function downloadCard() {
+      html2canvas(card, { backgroundColor: null }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "profile_card.png";
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>
